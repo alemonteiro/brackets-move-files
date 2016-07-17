@@ -1,0 +1,10 @@
+#project-files-container .jstree-brackets li a.dragging,
+#project-files-container .jstree-brackets li a.dragging:hover,
+#project-files-container .jstree-brackets li a.dragging:hover > span{
+	color: darkred;
+}
+
+#project-files-container .jstree-brackets li a.drag-holder,
+#project-files-container .jstree-brackets li a.drag-holder:hover{
+	background: rgba(0, 0, 0, 0.3);
+}
