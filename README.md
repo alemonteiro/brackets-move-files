@@ -33,7 +33,7 @@ Go the the extension folder path inside the node folder and run `npm install`, l
 ```
 cd Brackets/extensions/user/
 mkir alemonteiro.brackets-move-files
-git clone https://github.com/alemonteiro/brackets-move-files alemonteiro.brackets-move-files/node
+git clone https://github.com/alemonteiro/brackets-move-files alemonteiro.brackets-move-files
 cd alemonteiro.brackets-move-files/node
 npm install
 ```
