@@ -31,9 +31,9 @@ The required dependencies are not on this repository. Install them from the comm
 Go the the extension folder path inside the node folder and run `npm install`, like this
 
 ```
-cd /Brackets/extensions/user/
+cd Brackets/extensions/user/
 mkir alemonteiro.brackets-move-files
-git clone http://github.com/alemonteiro/brackets-move-files
+git clone https://github.com/alemonteiro/brackets-move-files alemonteiro.brackets-move-files/node
 cd alemonteiro.brackets-move-files/node
 npm install
 ```
