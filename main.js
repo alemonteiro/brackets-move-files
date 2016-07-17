@@ -35,7 +35,13 @@ define(function (require, exports, module) {
 	// Load stylesheet.
 	ExtensionUtils.loadStyleSheet(module, 'main.css');
 
-	var
+	var c = {
+		tag 	: 'alemonteiro.moveFiles => ',
+		log 	: function(text) { console.log(this.tag + text); },
+		error	: function(text) { console.error(this.tag + text); },
+		warn	: function(text) { console.warn(this.tag + text); }
+	},
+
 	// Go thru the UL parents from the item to get the path of the tree item
 	_getTreeItemPath = function($item) {
 		var txt = $.trim($item.text());
@@ -69,11 +75,9 @@ define(function (require, exports, module) {
 
 	// Handles mouse down on tree itens <a>
 	onMouseDown = function(evt) {
-		console.log('mouse down: ' + $(this).text());
+		c.log('Mouse Down: ' + $(this).text());
 		if ( ! is_pressed && ! is_moving && ! is_dragging ) {
-			$(this)
-				.data('drag-pressed', 1);
-			$pressedEl = $(this);
+			$(this).data('drag-pressed', 1);
 			is_pressed = true;
 			is_moving = false;
 			is_dragging = false;
@@ -83,30 +87,34 @@ define(function (require, exports, module) {
 	// Handles mouse down on tree itens <a> and <ul>
 	onMouseUp = function(evt) {
 
-		if ( is_moving ) return;
+		if ( is_moving ) 		return c.warn('Mouse up but files are still moving');
 		if ( ! is_dragging ) {
 			is_pressed = false;
 			return;
 		}
 
-		// Move if not released upon itself
+		// Move if not released upon an item that is not itself
 		if ( $(this).is('a') && $(this).data('drag-pressed') !== 1 ) {
 			evt.preventDefault();
 			evt.stopPropagation();
+			c.log('Dropped On: ' + $(this).text());
 			move(evt, getItemFullPath($pressedEl), getItemFullPath($(this)), $pressedEl, $(this));
 		}
+		// Move also if released upon an container on the tree view
 		else if ( $(this).is('ul') && $(this).data('reactid') )
 		{
 			evt.preventDefault();
 			evt.stopPropagation();
 			if ( $(this).prev().is('a') ) {
+				c.log('Dropped On: ' + $(this).prev().text());
 				move(evt, getItemFullPath($pressedEl), getItemFullPath($(this).prev()), $pressedEl, $(this));
 			}
 			else {
+				c.log('Dropped on project root');
 				move(evt, getItemFullPath($pressedEl), ProjectManager.getProjectRoot().fullPath,  $pressedEl, $(this));
 			}
 		}
-		// Cancel movement
+		// Cancel movement if dropped elsewhere
 		else {
 			waitForDrag();
 		}
@@ -119,7 +127,7 @@ define(function (require, exports, module) {
 
 	// Stop listening to mousedown and start listening to move and up(drop)
 	dragStart = function(evt, $a) {
-		console.log('drag start: ' + $a.text());
+		c.log('Drag Start: ' + $a.text());
 		is_dragging = true;
 		$a.data('drag-pressed', 1).addClass('dragging');
 		$pressedEl = $a;
@@ -127,7 +135,7 @@ define(function (require, exports, module) {
 
 	// Reset states and listeners
 	waitForDrag = function() {
-		console.log('wait for drag');
+		c.log('Waiting for drag');
 		is_moving = false;
 		is_pressed = false;
 		is_dragging = false;
@@ -139,19 +147,6 @@ define(function (require, exports, module) {
 
 		$dropTarget = undefined;
 		$pressedEl = undefined;
-
-		/*
-		.on('mouseup', function(evt) {
-			if ( is_pressed && $pressedEl ) {
-				var source = getItemFullPath($pressedEl),
-					dest = ProjectManager.getProjectRoot().fullPath;
-
-				evt.preventDefault();
-				evt.stopPropagation();
-
-				move(source, dest, $pressedEl, $(this));
-			}
-		});*/
 	},
 
 	// Use node MoveFilesDomain to make the move
@@ -159,12 +154,14 @@ define(function (require, exports, module) {
 		is_moving = true;
 		is_dragging = false;
 		is_pressed = false;
+		var label = evt.ctrlKey ? 'Copy ' : 'Move ';
 		_nodeDomain.exec(evt.ctrlKey ? 'copy' : 'move', source, dist).done(function() {
-			waitForDrag();
+			c.log(label + 'Completed');
 			ProjectManager.refreshFileTree();
-		}).fail(function(err) {
 			waitForDrag();
-			console.log('Move Error: ' + JSON.stringify(err));
+		}).fail(function(err) {
+			c.error(label + 'Error => ' + err);
+			waitForDrag();
 		});
 	};
 

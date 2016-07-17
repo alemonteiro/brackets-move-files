@@ -1,6 +1,6 @@
 {
   "name": "alemonteiro.brackets-move-files-domain",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Brackets domain for implementing the extension Move Files and Folders",
   "license": "MIT",
   "author": {
@@ -10,7 +10,7 @@
 	},
   	"repository": {
     	"type": "git",
-    	"url": "https://github.com/alemonteiro/brackets-sql-connector.git"
+    	"url": "https://github.com/alemonteiro/brackets-move-files.git"
   	},
   "dependencies": {
 	  "fs-extra": ">=0.30"

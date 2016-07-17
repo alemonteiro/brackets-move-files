@@ -1,10 +1,10 @@
 {
     "name": "alemonteiro.brackets-move-files",
     "title": "Move Files",
-    "description": "Drag and drop files and folders on the tree view move or copy(pressing ctrl) them",
+    "description": "Drag and drop files and folders on the tree view to move or copy(pressing ctrl) them",
 	"keywords":["move file", "drag and drop", "copy files", "copy folders"],
 	"homepage": "https://github.com/alemonteiro/brackets-move-files",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "license": "MIT",
 	"author": {
 		"name": "Alê Monteiro",

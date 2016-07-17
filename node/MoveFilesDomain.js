@@ -12,6 +12,7 @@
 		},
 		_domainManager,
 
+		// Get the final destination path
 		getDestinationPath = function(source, dist) {
 			// get stats for destination
 			var dstat = fs.lstatSync(dist);
@@ -34,22 +35,23 @@
 			return dist;
 		},
 
+		// Command to copy from source to destination
 		cmdCopy = function(source, dist, callback) {
 			try{
 				// Get the final path to move
 				dist = getDestinationPath(source, dist);
-				console.log(domainName + ' Copying => ' + source + ' TO ' + dist);
+				//console.log(domainName + ' Copying => ' + source + ' TO ' + dist);
 
 				// Move those things
 				fs.copy(source, dist, function(err) {
 					// Give feedback
-					callback(err);
+					callback(err, [dist]);
 				});
             }
             catch(err) {
-				console.error(domainName + ' Copy Error => ' + err.toLocaleString());
+				//console.error(domainName + ' Copy Error => ' + err.toLocaleString());
 				// Give error back
-				callback(err.message);
+				callback(err.toLocaleString());
             }
 		},
 
@@ -58,18 +60,18 @@
 			try{
 				// Get the final path to move
 				dist = getDestinationPath(source, dist);
-				console.log(domainName + ' Moving => ' + source + ' TO ' + dist);
+				//console.log(domainName + ' Moving => ' + source + ' TO ' + dist);
 
 				// Move those things
 				fs.move(source, dist, function(err) {
 					// Give feedback
-					callback(err);
+					callback(err, [dist]);
 				});
             }
             catch(err) {
-				console.error(domainName + ' Move Error => ' + err.toLocaleString());
+				//console.error(domainName + ' Move Error => ' + err.toLocaleString());
 				// Give error back
-				callback(err);
+				callback(err.toLocaleString());
             }
 		},
 
