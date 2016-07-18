@@ -1,6 +1,6 @@
 {
   "name": "alemonteiro.brackets-move-files-domain",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Brackets domain for implementing the extension Move Files and Folders",
   "license": "MIT",
   "author": {

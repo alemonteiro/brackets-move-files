@@ -42,6 +42,10 @@ You can fork and use your own repo as well.
 
 ### Changelog
 
+#### 0.1.2
+
+* Ajusted log output and check if NodeDomain is ready
+
 #### 0.1.1
 
 * Added more log to console
