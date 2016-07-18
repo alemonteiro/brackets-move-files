@@ -19,7 +19,7 @@ define(function (require, exports, module) {
 
 		// node domain
 		_domainName = "BracketsMoveFilesDomain",
-		_domainPath = ExtensionUtils.getModulePath(module, "node/MoveFilesDomain"),
+		_domainPath = ExtensionUtils.getModulePath(module, "node/MoveFilesDomain.js"),
 		_nodeDomain,
 
 		// UI Elements
@@ -35,11 +35,15 @@ define(function (require, exports, module) {
 	// Load stylesheet.
 	ExtensionUtils.loadStyleSheet(module, 'main.css');
 
+	// Console Logging utils
 	var c = {
+		parse: function(text) {
+			return (typeof text === 'string' ? text : (typeof text.toJson === 'function' ? text.toJson() : JSON.stringify(text)));
+		},
 		tag 	: 'alemonteiro.moveFiles => ',
-		log 	: function(text) { console.log(this.tag + text); },
-		error	: function(text) { console.error(this.tag + text); },
-		warn	: function(text) { console.warn(this.tag + text); }
+		log 	: function(text) { console.log(this.tag + this.parse(text)); },
+		error	: function(text) { console.error(this.tag + this.parse(text)); },
+		warn	: function(text) { console.warn(this.tag + this.parse(text)); }
 	},
 
 	// Go thru the UL parents from the item to get the path of the tree item
@@ -65,7 +69,7 @@ define(function (require, exports, module) {
 		if ( is_pressed && ! is_dragging && $(this).data('drag-pressed') === 1 ) {
 			dragStart(evt, $(this));
 		}
-		// dragging element is upon
+		// dragging element is upon an holder
 		else if ( is_dragging ) {
 			$(this).addClass('drag-holder');
 			evt.stopPropagation();
@@ -154,13 +158,18 @@ define(function (require, exports, module) {
 		is_moving = true;
 		is_dragging = false;
 		is_pressed = false;
+		if ( ! _nodeDomain.ready() ) {
+			c.error('NodeDomain ' + _domainName + ' is not ready!');
+			waitForDrag();
+			return;
+		}
 		var label = evt.ctrlKey ? 'Copy ' : 'Move ';
-		_nodeDomain.exec(evt.ctrlKey ? 'copy' : 'move', source, dist).done(function() {
-			c.log(label + 'Completed');
+		_nodeDomain.exec(evt.ctrlKey ? 'copy' : 'move', source, dist).done(function(destination) {
+			c.log(label + 'Completed To ' + destination);
 			ProjectManager.refreshFileTree();
 			waitForDrag();
 		}).fail(function(err) {
-			c.error(label + 'Error => ' + err);
+			c.error(label + 'Error => ' + c.parse(err));
 			waitForDrag();
 		});
 	};

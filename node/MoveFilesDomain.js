@@ -79,6 +79,8 @@
 		init = function (domainManager) {
 			_domainManager = domainManager;
 
+			console.log(domainName + ' => Domain Initializing');
+
 			// Register domain
 			if (!domainManager.hasDomain()) domainManager.registerDomain(domainName, domainVersion);
 
