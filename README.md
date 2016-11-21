@@ -45,6 +45,7 @@ You can fork and use your own repo as well.
 #### 0.2.0
 
 * Fixed some path and logic issues on move and copy
+* Changed usage from fs.move to fs.copy + fs.remove
 * Changed event listener from MouseMove to MouseOut/MoveOver
 * Changed drop background from black to blue (better visibility)
 
