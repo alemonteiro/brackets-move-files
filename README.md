@@ -14,13 +14,13 @@ Enalbes drag and drop of files and folders on the tree view.
 
 Click and drag (holding the mousedown) files and folders to other locations, drop to move.
 
-The dragging file will be colored 'darkred' and the drop holders will have an semi-transparent black background.
+The dragging file will be colored 'darkred' and the drop holders will have an semi-transparent dark blue background.
 
 Hold ctrl to copy files instead of moving (must be held upon mouse relase/drop)
 
 ## Details 
 
-1. Files are never overwrited. If same name files exists it'll log an error on console and do nothing
+1. Files are never overwrited. Copy is canceled if same name file already exists and copy will rename the dropped file.
 2. If a file or folder is dropped on top of a file, the move or copy will be made to the folder of that file (use this to move/copy files to the root directory)
 3. There's no multiple selection, do not bother trying to hold shift for now =)
 
@@ -41,6 +41,12 @@ npm install
 You can fork and use your own repo as well.
 
 ### Changelog
+
+#### 0.2.0
+
+* Fixed some path and logic issues on move and copy
+* Changed event listener from MouseMove to MouseOut/MoveOver
+* Changed drop background from black to blue (better visibility)
 
 #### 0.1.2
 

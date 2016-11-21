@@ -62,46 +62,45 @@ define(function (require, exports, module) {
 		return ProjectManager.getProjectRoot().fullPath + _getTreeItemPath($item);
 	},
 
-	// Handles mouse down on tree itens <a> and <ul>
-	onMouseMove = function(evt) {
-		if ( is_moving ) return;
-
-		if ( is_pressed && ! is_dragging && $(this).data('drag-pressed') === 1 ) {
+	// Adds the drag-holder if it's dragging
+	onMouseOver = function(evt) {
+		if ( is_pressed && is_dragging ) {
+			//c.log('onMouseOver - Remove Class: drag-holder');
+			$('a.drag-holder', $filesContainer).removeClass('drag-holder');
+			$(this).addClass('drag-holder');
+		}
+	},
+		
+	// Remove 'drop-holder' effect
+	onMouseOut = function(evt) {
+		if ( is_pressed && $(this).data('drag-pressed') === 1 && ! $(this).hasClass('dragging')) {
 			dragStart(evt, $(this));
 		}
-		// dragging element is upon an holder
-		else if ( is_dragging ) {
-			$(this).addClass('drag-holder');
-			evt.stopPropagation();
-			evt.preventDefault();
+		else if ( is_pressed || is_dragging || is_moving )  {
+			//c.log('onMouseOut - Add Class: drag-holder');
+			$(this).removeClass('drag-holder');
 		}
 	},
-
-	// Handles mouse down on tree itens <a>
-	onMouseDown = function(evt) {
-		c.log('Mouse Down: ' + $(this).text());
-		if ( ! is_pressed && ! is_moving && ! is_dragging ) {
-			$(this).data('drag-pressed', 1);
-			is_pressed = true;
-			is_moving = false;
-			is_dragging = false;
-		}
-	},
-
+		
 	// Handles mouse down on tree itens <a> and <ul>
 	onMouseUp = function(evt) {
-
-		if ( is_moving ) 		return c.warn('Mouse up but files are still moving');
+		removeMoveHandlers();
+		
+		if ( is_moving ) {
+			c.warn('Mouse up but files are still moving');
+			return;
+		}
 		if ( ! is_dragging ) {
+			//c.log('Mouse up but no dragging');
 			is_pressed = false;
 			return;
 		}
-
+		
 		// Move if not released upon an item that is not itself
 		if ( $(this).is('a') && $(this).data('drag-pressed') !== 1 ) {
 			evt.preventDefault();
 			evt.stopPropagation();
-			c.log('Dropped On: ' + $(this).text());
+			//c.log('Dropped On: ' + $(this).text());
 			move(evt, getItemFullPath($pressedEl), getItemFullPath($(this)), $pressedEl, $(this));
 		}
 		// Move also if released upon an container on the tree view
@@ -110,11 +109,11 @@ define(function (require, exports, module) {
 			evt.preventDefault();
 			evt.stopPropagation();
 			if ( $(this).prev().is('a') ) {
-				c.log('Dropped On: ' + $(this).prev().text());
+				//c.log('Dropped On: ' + $(this).prev().text());
 				move(evt, getItemFullPath($pressedEl), getItemFullPath($(this).prev()), $pressedEl, $(this));
 			}
 			else {
-				c.log('Dropped on project root');
+				//c.log('Dropped on project root');
 				move(evt, getItemFullPath($pressedEl), ProjectManager.getProjectRoot().fullPath,  $pressedEl, $(this));
 			}
 		}
@@ -123,29 +122,56 @@ define(function (require, exports, module) {
 			waitForDrag();
 		}
 	},
-
-	// Remove 'drop-holder' effect
-	onMouseOut = function(evt) {
-		if ( is_dragging || is_moving ) $(this).removeClass('drag-holder');
+		
+	// Add mouse event handlers 
+	attachMoveHandlers = function() {
+		$filesContainer
+			// Add drop-holder
+			.on('mouseover', 'ul > li > a', onMouseOver)	
+			// Remove drop-holder
+			.on('mouseout', 'ul > li > a', onMouseOut)
+			// Mouse up / Do Move / Cancel
+			.on('mouseup', 'ul > li > a', onMouseUp);
 	},
-
+		
+	// Removes mouse event handlers 
+	removeMoveHandlers = function() {
+		$filesContainer
+			.off('mouseover', 'ul > li > a', onMouseOver)	
+			.off('mouseout', 'ul > li > a', onMouseOut)
+			.off('mouseup', 'ul > li > a', onMouseUp);
+	},
+		
+	// Handles mouse down on tree itens <a>
+	onMouseDown = function(evt) {
+		//c.log('Mouse Down: ' + $(this).text());
+		if ( ! is_pressed && ! is_moving && ! is_dragging ) {
+			$pressedEl = $(this);
+			$(this).data('drag-pressed', 1);
+			is_pressed = true;
+			is_moving = false;
+			is_dragging = false;
+			attachMoveHandlers();
+		}
+	},
+				
 	// Stop listening to mousedown and start listening to move and up(drop)
 	dragStart = function(evt, $a) {
-		c.log('Drag Start: ' + $a.text());
+		//c.log('Drag Start: ' + $a.text());
+		$a.addClass('dragging');
 		is_dragging = true;
-		$a.data('drag-pressed', 1).addClass('dragging');
 		$pressedEl = $a;
 	},
 
 	// Reset states and listeners
 	waitForDrag = function() {
-		c.log('Waiting for drag');
+		//c.log('Waiting for drag');
 		is_moving = false;
 		is_pressed = false;
 		is_dragging = false;
 
 		if ( $dropTarget ) $dropTarget.removeClass('drag-holder');
-		if ( $pressedEl ) $pressedEl.removeClass('drag-holder dragging').data('drag-pressed', 0);
+		if ( $pressedEl ) $pressedEl.removeClass('dragging').data('drag-pressed', 0);
 
 		$(".drag-holder", $filesContainer).removeClass('drag-holder');
 
@@ -165,7 +191,7 @@ define(function (require, exports, module) {
 		}
 		var label = evt.ctrlKey ? 'Copy ' : 'Move ';
 		_nodeDomain.exec(evt.ctrlKey ? 'copy' : 'move', source, dist).done(function(destination) {
-			c.log(label + 'Completed To ' + destination);
+			//c.log(label + 'Completed To ' + destination);
 			ProjectManager.refreshFileTree();
 			waitForDrag();
 		}).fail(function(err) {
@@ -184,13 +210,8 @@ define(function (require, exports, module) {
 		$filesContainer = $("#project-files-container")
 
 			// Cancel mousedown tracking
-			.on('mousedown', 'ul > li > a', onMouseDown)
-			// Track mouse move on the element to start the drag and on folders to make it look like a place holder
-			.on('mousemove', 'ul > li > a', onMouseMove)
-			// Remove drag-holder
-			.on('mouseout', 'ul > li > a', onMouseOut)
-			// Mouse up / Do Move / Cancel
-			.on('mouseup', 'ul > li > a', onMouseUp);
+			.on('mousedown', 'ul > li > a', onMouseDown);
+		
 
 		$("body").on('mouseup', onMouseUp);
 	});

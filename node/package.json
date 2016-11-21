@@ -1,6 +1,6 @@
 {
   "name": "alemonteiro.brackets-move-files-domain",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Brackets domain for implementing the extension Move Files and Folders",
   "license": "MIT",
   "author": {
@@ -13,6 +13,6 @@
     	"url": "https://github.com/alemonteiro/brackets-move-files.git"
   	},
   "dependencies": {
-	  "fs-extra": ">=0.30"
+	  "fs-extra": ">=1.0.0"
   }
 }

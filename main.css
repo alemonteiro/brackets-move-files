@@ -6,5 +6,7 @@
 
 #project-files-container .jstree-brackets li a.drag-holder,
 #project-files-container .jstree-brackets li a.drag-holder:hover{
-	background: rgba(0, 0, 0, 0.3);
+	background: rgba(0, 0, 100, 0.25);
+	font-weight: bold;
+	font-style: italic;
 }

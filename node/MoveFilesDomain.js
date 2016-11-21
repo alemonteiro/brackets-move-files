@@ -12,22 +12,63 @@
 		},
 		_domainManager,
 
+		checkDistName = function(path, name) {
+			var i = 0,
+				ext = name.indexOf('.') > 0 ? name.split('.').reverse()[0] : false,
+				no_ext_name = ext ? name.substring(0, name.lastIndexOf('.')) : name,
+				new_name, f;
+			
+			do {
+				new_name = no_ext_name + ( i == 0 ? "" : '_' + i ) + ( ext ? "." + ext : "" );
+				try {
+					f = fs.lstatSync(path + '/' + new_name);
+					i = i+1;	
+					if ( !f.isFile() && ! f.isDirectory() )
+						f = false;
+				}
+				catch(err) {
+					f = false;
+				}
+			} while (f !== false);
+			
+			return new_name;
+		},
+		
 		// Get the final destination path
-		getDestinationPath = function(source, dist) {
+		getDestinationPath = function(source, dist, forCopy) {
 			// get stats for destination
-			var dstat = fs.lstatSync(dist);
-
-			// if destination is file it will be placed on the same folder
-			if ( dstat.isFile() ) {
-				var tmp = dist.split('/');
-				tmp.pop();
-				dist = tmp.join('/');
+			var alreadyExists = false,
+				dstat,
+				dist_name,
+				isFile = false;	
+			
+			try {
+				dstat = fs.lstatSync(dist);
+				// if destination is file it will be placed on the same folder
+				if ( dstat.isFile() ) {
+					isFile = true;
+					var tmp = dist.split('/');
+					tmp.pop();
+					dist = tmp.join('/');
+				}
+			}
+			catch(err) {
+				alreadyExists = false;
 			}
 
 			if ( dist.indexOf(source) > -1 ) throw new Error('Destination cannot be inside of Source!');
-
-			// make the destination full path (with the source file/folder name)
-			dist = dist + '/' + source.split('/').reverse()[0];
+			
+			var original_name = source.split('/').reverse()[0];
+			dist_name = checkDistName(dist, original_name);
+			
+			console.log('Source: ' + source + ' => ' + (dist+'/'+dist_name));
+			
+			if ( forCopy === false && original_name !== dist_name ) {
+				 throw new Error('Destination file already exists!');
+			}
+			
+			// Make the full path
+			dist = dist + '/' + dist_name;
 
 			// if source and destination are equal, do nothing
 			if ( dist === source ) throw new Error('Destination cannot be the same as Source!');
@@ -39,8 +80,9 @@
 		cmdCopy = function(source, dist, callback) {
 			try{
 				// Get the final path to move
-				dist = getDestinationPath(source, dist);
-				//console.log(domainName + ' Copying => ' + source + ' TO ' + dist);
+				console.log(domainName + ' Copying => ' + source + ' TO ' + dist);
+				dist = getDestinationPath(source, dist, true);
+				console.log(domainName + ' Copying => ' + source + ' TO ' + dist);
 
 				// Move those things
 				fs.copy(source, dist, function(err) {
@@ -51,28 +93,32 @@
             catch(err) {
 				//console.error(domainName + ' Copy Error => ' + err.toLocaleString());
 				// Give error back
-				callback(err.toLocaleString());
+				callback('Copy Error => ' + err.toLocaleString());
             }
 		},
 
 		// Command to move files and folders
 		cmdMove = function(source, dist, callback) {
-			try{
-				// Get the final path to move
-				dist = getDestinationPath(source, dist);
+			// Get the final path to move
+			try {
 				//console.log(domainName + ' Moving => ' + source + ' TO ' + dist);
-
-				// Move those things
-				fs.move(source, dist, function(err) {
+				dist = getDestinationPath(source, dist, false);
+				
+				fs.copy(source, dist, function(err) {
 					// Give feedback
-					callback(err, [dist]);
+					if ( ! err ) {
+						fs.remove(source, function(err) {
+							callback(err, [dist]);
+						});
+					}
+					else {
+						callback(err, [dist]);
+					}
 				});
-            }
-            catch(err) {
-				//console.error(domainName + ' Move Error => ' + err.toLocaleString());
-				// Give error back
-				callback(err.toLocaleString());
-            }
+			}
+			catch(err) {
+				callback("Move Error: " + err.toLocaleString());
+			}
 		},
 
 		// Initialization
